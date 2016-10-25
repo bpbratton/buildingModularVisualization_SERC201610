@@ -6,7 +6,8 @@ pauseTime = 0.00001;
 tailLength = 50;
 xlimits = [0,3];
 ylimits = [0,3];
-flowFieldSpacing = 0.1;
+flowFieldSpacing = 0.1; % spacing of grid to build flow field on
+flowFieldDecayLength = 1.5; % as one moves away from the fixed point, may the quiver points less visually important
 howCloseToFixedPoint = 0.3; % standard deviation in starting position
 %% calculate the dynamics for a system that starts at an arbitrary position
 % x0,y0
@@ -33,6 +34,10 @@ tailY = repmat(y0,tailLength,1);
 
 % flow field
 [xx,yy] = meshgrid(xlimits(1):flowFieldSpacing:xlimits(2),ylimits(1):flowFieldSpacing:ylimits(2));
+
+[theta,r] = cart2pol(xx-xFix,yy-yFix);
+xx(r>flowFieldDecayLength) = nan;
+yy(r>flowFieldDecayLength) = nan;
 
 % start with a blank graph
 clf;
