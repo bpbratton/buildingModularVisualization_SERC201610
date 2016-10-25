@@ -4,7 +4,7 @@ a = 0.08;
 dt = 0.1;
 pauseTime = 0.00001;
 tailLength = 15;
-howCloseToFixedPoint = 0.02; % standard deviation in starting position
+howCloseToFixedPoint = 0.00; % standard deviation in starting position
 %% calculate the dynamics for a system that starts at an arbitrary position
 % x0,y0
 
@@ -59,6 +59,9 @@ while counter < 300
     tailX = [tailX(2:end);xNew];
     tailY = [tailY(2:end);yNew];
     set(tailHand,'xData',tailX,'yData',tailY);
+    
+    title(num2str(counter));
+    
     % move on to the next time step
     counter = counter+1;
 end
