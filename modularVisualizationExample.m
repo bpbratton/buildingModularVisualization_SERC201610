@@ -1,9 +1,10 @@
 %% initialize parameters
 b = 0.6;
 a = 0.08;
-dt = 0.01;
-pauseTime = 0.01;
-tailLength = 25;
+dt = 0.1;
+pauseTime = 0.001;
+tailLength = 5;
+howCloseToFixedPoint = 1; % standard deviation in starting position
 %% calculate the dynamics for a system that starts at an arbitrary position
 % x0,y0
 
@@ -13,13 +14,21 @@ xdot = @(x,y) y*x^2 - x + a*y;
 
 % proceed in one time step using Euler integration
 counter  = 1;
-x0 = 2;
-y0 = 1;
+
+xFix = 0.6;
+yFix = 0.6/(0.08+0.6^2);
+
+x0 = xFix+randn(1)*howCloseToFixedPoint;
+y0 = yFix+randn(1)*howCloseToFixedPoint;
 xNew = x0;
 yNew = y0;
+
+
 % setup vectors to hold position of "tail"
 tailX = repmat(x0,tailLength,1);
 tailY = repmat(y0,tailLength,1);
+
+
 
 % start with a blank graph
 clf;
@@ -29,12 +38,15 @@ pHand = plot(xNew,yNew,'r*','linewidth',2,'markersize',10);
 hold on;
 tailHand = plot(tailX,tailY,'b','linewidth',2);
 
+% add in a cross at the fixed point
+plot(xFix,yFix,'kx','linewidth',2);
+
 % set plotting limits to remain the same
 xlim([0,3]);
 ylim([0,3]);
 
 % loop over a few frames
-while counter < 100
+while counter < 300
     % calculate the new position
     xNew = xNew + dt*xdot(xNew,yNew);
     yNew = yNew + dt*ydot(xNew,yNew);
