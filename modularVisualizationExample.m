@@ -4,11 +4,14 @@ a = 0.08;
 dt = 0.03;
 pauseTime = 0.00001;
 tailLength = 5;
-xlimits = [-2,2];
-ylimits = [-2,2];
-flowFieldSpacing = 0.1; % spacing of grid to build flow field on
+xlimits = [-0.6,0.6];
+ylimits = [-2,1];
+flowFieldSpacing = 0.03; % spacing of grid to build flow field on
 flowFieldDecayLength = 10.0; % as one moves away from the fixed point, may the quiver points less visually important
 howCloseToFixedPoint = 1.5; % standard deviation in starting position
+nSpots = 5;
+T = 100;
+
 %% calculate the dynamics for a system that starts at an arbitrary position
 % x0,y0
 
@@ -18,22 +21,6 @@ xdot = @(x,y) -3*x;
 
 % proceed in one time step using Euler integration
 counter  = 1;
-
-% xFix = b;
-% yFix = b/(b+a^2);
-
-yFix = -1;
-xFix = 0;
-
-x0 = xFix+randn(1)*howCloseToFixedPoint;
-y0 = yFix+randn(1)*howCloseToFixedPoint;
-xNew = x0;
-yNew = y0;
-
-
-% setup vectors to hold position of "tail"
-tailX = repmat(x0,tailLength,1);
-tailY = repmat(y0,tailLength,1);
 
 % flow field
 [xx,yy] = meshgrid(xlimits(1):flowFieldSpacing:xlimits(2),ylimits(1):flowFieldSpacing:ylimits(2));
@@ -57,9 +44,6 @@ pHand = plot(xNew,yNew,'r*','linewidth',2,'markersize',10);
 alphaData = repmat(tailLength./[1:(tailLength+1)],1);
 alphaData = (alphaData(:));
 alphaData = alphaData.^(-2);
-tailHand = patchline([tailX;nan],[tailY;nan],'edgecolor','b','LineWidth',2,...
-    'EdgeAlpha','interp',...
-    'FaceVertexAlphaData',alphaData);
 
 % add in a cross at the fixed point
 plot(xFix,yFix,'kx','linewidth',2);
@@ -67,23 +51,29 @@ plot(xFix,0,'ks','linewidth',2);
 
 
 
+
 % set plotting limits to remain the same
 xlim(xlimits);
 ylim(ylimits);
 
+for kkSpot = 1:nSpots
 % keep dropping new spots in
-x0 = xFix+randn(1)*howCloseToFixedPoint;
-y0 = yFix+randn(1)*howCloseToFixedPoint;
-xNew = x0;
-yNew = y0;
-
-
+xNew(1,kkSpot) = rand(1)*diff(xlimits)+xlimits(1);
+yNew(1,kkSpot) = rand(1)*diff(ylimits)+ylimits(1);
+end
 % setup vectors to hold position of "tail"
-tailX = repmat(x0,tailLength,1);
-tailY = repmat(y0,tailLength,1);
-
+tailX = repmat(xNew,tailLength,1);
+tailY = repmat(yNew,tailLength,1);
+for kkSpot = 1:nSpots
+tailHand(kkSpot) = patchline([tailX(:,kkSpot);nan],[tailY(:,kkSpot);nan],'edgecolor','b','LineWidth',2,...
+    'EdgeAlpha','interp',...
+    'FaceVertexAlphaData',alphaData);
+end
+%
 % loop over a few frames
-while counter < 100
+ticA = tic;
+while toc(ticA) < 3
+    
     % calculate the new position
     xNew = xNew + dt*xdot(xNew,yNew);
     yNew = yNew + dt*ydot(xNew,yNew);
@@ -92,11 +82,14 @@ while counter < 100
     set(pHand,'xData',xNew,'yData',yNew);
     figure(gcf);pause(pauseTime);
     
+    for kkSpot = 1:nSpots
+
     % update the tail coordinates
-    tailX = [tailX(2:end);xNew];
-    tailY = [tailY(2:end);yNew];
-    set(tailHand,'xData',[tailX;nan],'yData',[tailY;nan]);
-    
+    tailX(:,kkSpot) = [tailX(2:end,kkSpot);xNew(kkSpot)];
+    tailY(:,kkSpot) = [tailY(2:end,kkSpot);yNew(kkSpot)];
+    set(tailHand,'xData',[tailX(:,kkSpot);nan],...
+        'yData',[tailY(:,kkSpot);nan]);
+    end
     title(num2str(counter));
     
     % move on to the next time step
