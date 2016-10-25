@@ -4,13 +4,16 @@ a = 0.08;
 dt = 0.1;
 pauseTime = 0.00001;
 tailLength = 50;
+xlimits = [0,3];
+ylimits = [0,3];
+flowFieldSpacing = 0.1;
 howCloseToFixedPoint = 0.3; % standard deviation in starting position
 %% calculate the dynamics for a system that starts at an arbitrary position
 % x0,y0
 
 % setup anonymous functions to calculate the derivatives
-ydot = @(x,y) -y*x^2 + b - a*y;
-xdot = @(x,y) y*x^2 - x + a*y;
+ydot = @(x,y) -y.*x.^2 + b - a*y;
+xdot = @(x,y) y.*x.^2 - x + a*y;
 
 % proceed in one time step using Euler integration
 counter  = 1;
@@ -28,9 +31,15 @@ yNew = y0;
 tailX = repmat(x0,tailLength,1);
 tailY = repmat(y0,tailLength,1);
 
+% flow field
+[xx,yy] = meshgrid(xlimits(1):flowFieldSpacing:xlimits(2),ylimits(1):flowFieldSpacing:ylimits(2));
+
 % start with a blank graph
 clf;
 hold on;
+
+% plot flow field as quiver
+quiver(xx(:),yy(:),xdot(xx(:),yy(:)),ydot(xx(:),yy(:)),10);
 
 % save plotting handle to improve speed and smoothness
 pHand = plot(xNew,yNew,'r*','linewidth',2,'markersize',10);
